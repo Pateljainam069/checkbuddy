@@ -1,0 +1,156 @@
+@import "tailwindcss";
+
+/*
+  CheckBuddy — a field inspection instrument.
+
+  The governing rule of this design: the interface is monochrome, and colour
+  only ever means a verdict. Every control, rule, border and chip is graphite on
+  ledger stock. Green, red and amber appear nowhere except a compliance result.
+  Nothing is tinted for decoration, because a tinted button would spend the one
+  signal this tool exists to send.
+
+  Surfaces are drawn as ruled register lines rather than floating cards — the
+  artifact this is modelled on is an inspection docket, not a dashboard.
+*/
+
+:root {
+  color-scheme: light;
+
+  /* Ledger stock: a cool grey-green paper, not a warm cream. */
+  --ground: #e9ece6;
+  --raised: #f4f6f1;
+  --sunken: #dee2da;
+
+  --ink: #16191b;
+  --ink-2: #4a5157;
+  --ink-3: #737b80;
+
+  --rule: #c9cfc6;
+  --rule-strong: #a3aba1;
+
+  /* The only chroma in the system. */
+  --pass: #1b6b4a;
+  --pass-ground: #dfe9e0;
+  --fail: #a32a1c;
+  --fail-ground: #f0dfdb;
+  --review: #8a6108;
+  --review-ground: #efe6d3;
+
+  --focus: #16191b;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+
+    --ground: #14171a;
+    --raised: #1c2024;
+    --sunken: #0e1113;
+
+    --ink: #e8ebe6;
+    --ink-2: #a7aeb2;
+    --ink-3: #798085;
+
+    --rule: #2e343a;
+    --rule-strong: #454d54;
+
+    --pass: #5fc79a;
+    --pass-ground: #16241e;
+    --fail: #f08a78;
+    --fail-ground: #2a1714;
+    --review: #dcae4e;
+    --review-ground: #251d0e;
+
+    --focus: #e8ebe6;
+  }
+}
+
+@theme inline {
+  --color-ground: var(--ground);
+  --color-raised: var(--raised);
+  --color-sunken: var(--sunken);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-rule: var(--rule);
+  --color-rule-strong: var(--rule-strong);
+  --color-pass: var(--pass);
+  --color-fail: var(--fail);
+  --color-review: var(--review);
+
+  --font-display: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-plex-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, "SFMono-Regular", monospace;
+
+  --radius-instrument: 2px;
+}
+
+* {
+  border-color: var(--rule);
+}
+
+body {
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/*
+  Engraved marker: the small tracked uppercase labels used for field names and
+  section headings. Borrowed from the legends stamped onto measuring
+  instruments, where a label has to stay legible at 2mm.
+*/
+.marker {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.6875rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+/* Machine-read values are always set in mono — OCR output is data, not prose. */
+.readout {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+:where(a, button, input, select, [tabindex]):focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: 1px;
+}
+
+/*
+  The one orchestrated moment in the product: the verdict lands like a stamp
+  coming down. Everything else in the interface is still.
+*/
+@keyframes impress {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scaleY(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.impress {
+  animation: impress 260ms cubic-bezier(0.2, 0.9, 0.3, 1) both;
+  transform-origin: top center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .impress {
+    animation: none;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
