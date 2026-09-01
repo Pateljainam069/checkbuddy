@@ -55,6 +55,52 @@ The backend must be running (see above) for the scan flow and history pages to r
 
 Read [Layout](#layout) below for what each frontend folder owns.
 
+## Testing on a phone
+
+The camera scanner needs a secure context — `https://`, or `localhost` on the
+same machine — so `http://<LAN-IP>:3000` will not get camera permission on a
+phone. Two ways around it:
+
+**HTTPS on the LAN.** Run `npm run dev -- --webpack --experimental-https`,
+then open `https://<LAN-IP>:3000` on the phone (find the IP with `ipconfig`)
+and accept the self-signed cert warning. If `--experimental-https` hangs on a
+Windows admin prompt (it shells out to `mkcert`, which needs to install a
+local CA), generate a cert yourself instead and skip `mkcert` entirely:
+
+```bash
+openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days 365 -nodes -subj "/CN=<LAN-IP>"
+npm run dev -- --webpack --experimental-https --experimental-https-key key.pem --experimental-https-cert cert.pem
+```
+
+**If the phone can't reach the LAN URL at all** — "site can't be reached",
+not a cert warning — the router is almost certainly isolating Wi-Fi clients
+from each other, which is common even on home routers and can't be fixed from
+this machine. Confirm Windows Firewall isn't the cause first (`Get-NetFirewallRule`
+for the relevant `node.exe`/`python.exe` allow rules), then route around it
+with a tunnel instead of chasing the router's admin panel:
+
+```bash
+cloudflared tunnel --url http://localhost:3000   # frontend
+cloudflared tunnel --url http://localhost:8000   # backend, in a second terminal
+```
+
+Each prints a random `https://*.trycloudflare.com` URL with a real cert — no
+warning to click through on the phone. If you tunnel the backend too, point
+`NEXT_PUBLIC_BACKEND_URL` at the backend's tunnel URL and **rebuild**
+(`next build && next start` — `NEXT_PUBLIC_*` vars are baked in at build
+time; editing `.env.local` alone does nothing for an already-running build).
+The backend's CORS config already allows `*.trycloudflare.com` origins (see
+`main.py`).
+
+In dev mode specifically, Next.js blocks JS bundles and HMR from any origin
+other than `localhost`/`127.0.0.1` by default — the page renders but nothing
+is interactive, no error, no console noise. `next.config.ts`'s
+`allowedDevOrigins` already lists `*.trycloudflare.com` and one LAN IP; add
+your own IP there if it differs. A production build (`next build && next
+start`) sidesteps this entirely and also drops the dev-only hydration-error
+overlay, which is worth switching to if the phone shows a hydration error
+that a normal reload doesn't clear.
+
 ## What it checks
 
 Six declarations, each returning `pass`, `fail`, or `needs_review`:

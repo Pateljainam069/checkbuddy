@@ -38,7 +38,11 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
     # Widened for a deployed frontend later; local development needs only the list above.
-    allow_origin_regex=r"https://.*\.vercel\.app",
+    # Also allows trycloudflare.com quick-tunnel origins, used to test the camera
+    # scanner on a real phone when the router isolates Wi-Fi clients from each
+    # other (common even on home routers) and a direct LAN URL can't reach this
+    # machine. See README's "Testing on a phone" section.
+    allow_origin_regex=r"https://.*\.(vercel\.app|trycloudflare\.com)",
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
